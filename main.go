@@ -62,6 +62,46 @@ func ask(reader bufio.Reader, q string, a string) bool {
 	}
 }
 
+func createQuiz() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Helping you create a quiz!")
+	fmt.Println("What should the quiz be called?")
+	title, _ := reader.ReadString('\n')
+	title = strings.TrimRight(title, "\n")
+	fmt.Println("Really " + title + " ? okay....")
+	fmt.Println("You will now begin entering Question and Answer pairs")
+	quiz := make(map[string]string)
+	do := true
+	for do {
+		fmt.Print("Q: ")
+		q, _ := reader.ReadString('\n')
+		q = strings.TrimRight(q, "\n")
+		fmt.Print("A: ")
+		a, _ := reader.ReadString('\n')
+		a = strings.TrimRight(a, "\n")
+		quiz[q] = a
+		fmt.Println("Another? y/n")
+		res, _ := reader.ReadString('\n')
+		res = strings.TrimRight(res, "\n")
+		if res == "y" {
+		} else {
+			do = false
+		}
+	}
+	fmt.Println(quiz)
+	filePath := "Quizes/" + title + ".csv"
+	file, err := os.Create(filePath)
+	check(err)
+	defer file.Close()
+	for key, value := range quiz {
+		q := key
+		a := value
+		_, err := file.WriteString(q + "," + a + "\n")
+		check(err)
+	}
+	os.Exit(0)
+}
+
 func timer(t int, right *float64, total *float64) {
 	dur := time.Duration(t) * time.Second
 	t1 := time.NewTimer(dur)
@@ -107,5 +147,13 @@ func main() {
 	fileFlag := flag.String("f", "./quiz.txt", "a filepath")
 	timerFlag := flag.Int("t", 30, "timer seconds")
 	flag.Parse()
-	game(fileFlag, timerFlag)
+	fmt.Println("(1) Play Quiz (2) Create Quiz")
+	reader := bufio.NewReader(os.Stdin)
+	res, _ := reader.ReadString('\n')
+	res = strings.TrimRight(res, "\n")
+	if res == "1" {
+		game(fileFlag, timerFlag)
+	} else {
+		createQuiz()
+	}
 }
