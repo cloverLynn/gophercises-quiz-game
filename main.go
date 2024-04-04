@@ -62,23 +62,49 @@ func ask(reader bufio.Reader, q string, a string) bool {
 	}
 }
 
-func main() {
-	fileFlag := flag.String("f", "./quiz.txt", "a filepath")
-	flag.Parse()
-	fmt.Println(*fileFlag)
+func timer(timer *int, right *float64, total *float64) {
+	t1 := time.NewTimer(timer * time.Second)
+	<-t1.C
+	fmt.Println("Timer expired")
+	endGame(right, total)
+}
+
+func endGame(right *float64, total *float64) {
+	perc := math.Floor((*right / *total) * 100)
+	fmt.Printf("You got a %d/%d \n", int(*right), int(*total))
+	fmt.Printf("%d%%\n", int(perc))
+	os.Exit(0)
+}
+
+func startGame() bool {
+	reader := bufio.NewReader(os.Stdin)
+	if ask(*reader, "Ready? y/n", "y") {
+		return true
+	} else {
+		os.Exit(0)
+		return false
+	}
+}
+
+func game(fileFlag *string, timerFlag *int) {
 	right := float64(0)
 	quiz := importCSV(*fileFlag)
 	maxPossible := float64(len(quiz))
 	reader := bufio.NewReader(os.Stdin)
+	startGame()
+	go timer(*timerFlag, &right, &maxPossible)
 	for q, a := range quiz {
 		if ask(*reader, q, a) {
 			right++
 		} else {
-
 		}
 	}
-	perc := math.Floor((right / maxPossible) * 100)
-	fmt.Printf("You got a %d/%d \n", int(right), int(maxPossible))
-	fmt.Printf("%d%%\n", int(perc))
+	endGame(&right, &maxPossible)
+}
 
+func main() {
+	fileFlag := flag.String("f", "./quiz.txt", "a filepath")
+	timerFlag := flag.Int("t", 30, "timer seconds")
+	flag.Parse()
+	game(fileFlag, timerFlag)
 }
