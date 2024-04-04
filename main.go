@@ -62,8 +62,9 @@ func ask(reader bufio.Reader, q string, a string) bool {
 	}
 }
 
-func timer(timer *int, right *float64, total *float64) {
-	t1 := time.NewTimer(timer * time.Second)
+func timer(t int, right *float64, total *float64) {
+	dur := time.Duration(t) * time.Second
+	t1 := time.NewTimer(dur)
 	<-t1.C
 	fmt.Println("Timer expired")
 	endGame(right, total)
